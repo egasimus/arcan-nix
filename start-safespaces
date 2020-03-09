@@ -1,0 +1,8 @@
+#!/bin/sh
+Appls=`realpath $(dirname $0)`/safespaces
+echo $Appls
+pushd `dirname $0`/result/bin>/dev/null; trap "popd>/dev/null" EXIT
+Base=../share/arcan
+Scripts=$Base/scripts
+Resources=$Base/resources
+./arcan_sdl -t $Appls -T $Scripts -p $Resources -w1366 -h768 safespaces device=desktop

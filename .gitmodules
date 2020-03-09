@@ -7,3 +7,6 @@
 [submodule "durden"]
 	path = durden
 	url = https://github.com/letoram/durden.git
+[submodule "safespaces"]
+	path = safespaces
+	url = https://github.com/letoram/safespaces.git
