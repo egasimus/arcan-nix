@@ -69,12 +69,10 @@ let
       xorg.xcbutil
       xorg.xcbutilwm
     ];
-    
     PKG_CONFIG_PATH = concat [ # make wayland protocols available
       "${pkgs.wayland-protocols}/share/pkgconfig"
       "${pkgs.libusb1.dev}/lib/pkgconfig"
     ];
-    
     CFLAGS = concat [ # don't warn on read()/write() without a format
       "-Wno-format"   # (Arcan code uses them on SHMIFs)
       "-Wno-format-security"
@@ -86,7 +84,6 @@ let
       "-DLIBUSB_1_INCLUDE_DIRS=${pkgs.libusb1}/lib"
       "-DLIBUSB_1_LIBRARIES=${pkgs.libusb1.dev}/include"
       "-DWAYLANDPROTOCOLS_PATH=${pkgs.wayland-protocols}/share/wayland-protocols"
-
       # enable features:
       "-DVIDEO_PLATFORM=egl-dri"
       "-DSHMIF_TUI_ACCEL=ON"
@@ -96,7 +93,6 @@ let
       "-DHYBRID_SDL=On"
       "-DHYBRID_HEADLESS=On"
       "-DFSRV_DECODE_UVC=Off"
-
       # optional
       #"--debug-output"
       #"--trace"

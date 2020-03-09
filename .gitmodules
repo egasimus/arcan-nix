@@ -1,3 +1,9 @@
 [submodule "arcan"]
 	path = arcan
-	url = ./arcan
+	url = https://github.com/letoram/arcan.git
+[submodule "prio"]
+	path = prio
+	url = https://github.com/letoram/prio.git
+[submodule "durden"]
+	path = durden
+	url = https://github.com/letoram/durden.git
