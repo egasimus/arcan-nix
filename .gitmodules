@@ -10,3 +10,6 @@
 [submodule "safespaces"]
 	path = safespaces
 	url = https://github.com/letoram/safespaces.git
+[submodule "awb"]
+	path = awb
+	url = https://github.com/letoram/awb.git
