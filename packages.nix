@@ -1,4 +1,4 @@
-{ stdenv, pkgs }: let
+{ lib, newScope, stdenv, pkgs }: let
 
   # nicer aliases
   derive = stdenv.mkDerivation;
@@ -25,12 +25,25 @@
     '';
   };
 
-  arcan = derive {
+  # cmake flags pointing to locations of arcan headers
+  arcanIncludeDirs = arcan: [
+    "-DARCAN_SHMIF_INCLUDE_DIR=${arcan}/include/arcan/shmif"
+    "-DARCAN_TUI_INCLUDE_DIR=${arcan}/include/arcan"
+  ];
+
+  # cmake flags pointing to locations of libusb1 headers and binaries
+  libusbDirs = libusb1: [
+    "-DLIBUSB_1_INCLUDE_DIRS=${libusb1.dev}/include/libusb-1.0"
+    "-DLIBUSB_1_LIBRARIES=${libusb1}/lib/libusb-1.0.so"
+  ];
+
+in lib.makeScope newScope (self: with self; {
+
+  arcan = callPackage ({ pkgs }: derive {
     name = "arcan";
     src = ./arcan;
-    patches = [ ./nosuid.patch ];
-    # add vendored libuvc
-    postUnpack = ''
+    patches = [ ./nosuid.patch ]; # nix refuses to build suid binaries
+    postUnpack = '' # add vendored libuvc
       mkdir -p ./arcan/external/git/libuvc
       pushd ./arcan/external/git/
       shopt -s dotglob nullglob  # bashism: * now also matches dotfiles
@@ -75,27 +88,72 @@
       "-Wno-format"   # (Arcan code uses them on SHMIFs)
       "-Wno-format-security"
     ];
-    cmakeFlags = concat [
+    cmakeFlags = concat (
       # cmake won't be able to find these paths on its own:
+      (libusbDirs pkgs.libusb) ++ [
       "-DDRM_INCLUDE_DIR=${pkgs.libdrm.dev}/include/libdrm"
       "-DGBM_INCLUDE_DIR=${pkgs.libGL.dev}/include"
-      "-DLIBUSB_1_INCLUDE_DIRS=${pkgs.libusb1}/lib"
-      "-DLIBUSB_1_LIBRARIES=${pkgs.libusb1.dev}/include"
       "-DWAYLANDPROTOCOLS_PATH=${pkgs.wayland-protocols}/share/wayland-protocols"
       # enable features:
       "-DVIDEO_PLATFORM=egl-dri"
       "-DSHMIF_TUI_ACCEL=ON"
       "-DENABLE_LWA=ON"
-      "-DVERBOSE=ON"
       "-DNO_BUILTIN_OPENHMD=ON"
       "-DHYBRID_SDL=On"
       "-DHYBRID_HEADLESS=On"
       "-DFSRV_DECODE_UVC=Off"
       # optional
+      "-DVERBOSE=ON"
       #"--debug-output"
       #"--trace"
-
       "../src"
-    ];
-  };
-in arcan
+    ]);
+  }) {};
+
+  acfgfs = callPackage ({ pkgs }: derive {
+    name = "acfgfs";
+    src = ./arcan;
+    nativeBuildInputs = with pkgs; [ cmake gcc git ];
+    buildInputs = [ arcan ] ++ (with pkgs; [ fuse3 ]);
+    cmakeFlags = concat ((arcanIncludeDirs arcan) ++ [ "../src/tools/acfgfs" ]);
+  }) {};
+
+  aclip = callPackage ({ pkgs }: derive {
+    name = "aclip";
+    src = ./arcan;
+    nativeBuildInputs = with pkgs; [ cmake gcc git pkg-config ];
+    buildInputs = [ arcan ];
+    PKG_CONFIG_PATH = concat [ "${arcan}/lib/pkgconfig" ];
+    cmakeFlags = concat ((arcanIncludeDirs arcan) ++ [ "../src/tools/aclip" ]);
+  }) {};
+
+  aloadimage = callPackage ({ pkgs }: derive {
+    name = "aloadimage";
+    src = ./arcan;
+    nativeBuildInputs = with pkgs; [ cmake gcc git ];
+    buildInputs = [ arcan ];
+    cmakeFlags = concat ((arcanIncludeDirs arcan) ++ [ "../src/tools/aloadimage" ]);
+  }) {};
+
+  shmmon = callPackage ({ pkgs }: derive {
+    name = "shmmon";
+    src = ./arcan;
+    nativeBuildInputs = with pkgs; [ cmake gcc git ];
+    buildInputs = [ arcan ];
+    cmakeFlags = concat ((arcanIncludeDirs arcan) ++ [ "../src/tools/shmmon" ]);
+  }) {};
+
+  # TODO: provide <hidapi/hidapi.h> include path
+  #vrbridge = callPackage ({ pkgs }: derive {
+    #name = "vrbridge";
+    #src = ./arcan;
+    #nativeBuildInputs = with pkgs; [ cmake gcc git pkg-config ];
+    #buildInputs = [ arcan ] ++ (with pkgs; [ libusb1 ]);
+    #cmakeFlags = concat (
+      #(arcanIncludeDirs arcan) ++
+      #(libusbDirs pkgs.libusb1) ++
+      #[ "../src/tools/vrbridge" ]
+    #);
+  #}) {};
+
+})

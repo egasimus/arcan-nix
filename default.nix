@@ -1,9 +1,4 @@
-let
-  nixpkgs = import ./nixpkgs.nix;
-  pkgs = import nixpkgs {
-    config = {};
-    overlays = [
-      (import ./overlay.nix)
-    ];
-  };
-in pkgs.arcan
+(import (import ./nixpkgs.nix) {
+  config = {};
+  overlays = [ (import ./overlay.nix) ];
+}).arcan

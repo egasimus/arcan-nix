@@ -1,3 +1,3 @@
 self: super: {
-  arcan = self.callPackage ./derivation.nix {};
+  arcan = self.callPackage ./packages.nix {};
 }

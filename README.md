@@ -11,8 +11,10 @@ nix-build
 ./start-prio
 ```
 
+- **TODO**: Submit to nixpkgs
 - **TODO**: Build manpages
+- **TODO**: Add launcher scripts to build
+- **TODO**: Fix missing include for vrbridge
 - **TODO**: Add package.nix and PR to nixpkgs
 - **TODO**: Add option.nix and PR to NixOS
-- **TODO**: Fix vendored libuvc
 - **TODO**: Add release.nix and spec.nix
