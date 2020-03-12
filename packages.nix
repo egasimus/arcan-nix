@@ -12,11 +12,11 @@
     src = pkgs.fetchgit {
       leaveDotGit = true;
       url = "https://github.com/letoram/libuvc.git";
-      rev = "master";
-      sha256 = "09zl07aa946f8rha6sn72b19np5sfxamjq4asv897h2y7my67i79";
+      rev = "v0.0.6";
+      sha256 = "1jdmiinsd91nnli5hgcn9c6ifj0s6ngbyjwm0z6fim4f8krnh0sf";
     };
     nativeBuildInputs = with pkgs; [ git ];
-    # fetchgit strips all refs, creating a fetchgit branch
+    # fetchgit strips all refs, leaving just a fetchgit branch
     # but cmake needs to check out the ref called 'master':
     installPhase = ''
       git tag master
@@ -37,7 +37,26 @@
     "-DLIBUSB_1_LIBRARIES=${libusb1}/lib/libusb-1.0.so"
   ];
 
-in lib.makeScope newScope (self: with self; {
+in lib.makeScope newScope (self: with self; let
+
+  arcanAppl = name: src: root: callPackage ({ pkgs }: derive {
+    name = name;
+    src = src;
+    nativeBuildInputs = with pkgs; [ envsubst ];
+    buildInputs = [ arcan ];
+    installPhase = ''
+      mkdir -p $out/${name}
+      cp -r ${root} $out/${name}
+      Arcan=${arcan} Appls=$out Appl=${name} envsubst \
+        < ${./scripts/arcan_wrapper} \
+        > $out/arcan.${name}
+      chmod +x $out/arcan.${name}
+    '';
+  }) {};
+
+in {
+
+  # arcan core:
 
   arcan = callPackage ({ pkgs }: derive {
     name = "arcan";
@@ -110,6 +129,8 @@ in lib.makeScope newScope (self: with self; {
     ]);
   }) {};
 
+  # arcan utilities:
+
   acfgfs = callPackage ({ pkgs }: derive {
     name = "acfgfs";
     src = ./arcan;
@@ -155,5 +176,12 @@ in lib.makeScope newScope (self: with self; {
       #[ "../src/tools/vrbridge" ]
     #);
   #}) {};
+
+  # arcan appls
+
+  prio = arcanAppl "prio" ./prio "*";
+  durden = arcanAppl "durden" ./durden "durden";
+  safespaces = arcanAppl "safespaces" ./safespaces "safespaces";
+  awb = arcanAppl "awb" ./awb "*";
 
 })
