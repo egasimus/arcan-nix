@@ -45,12 +45,12 @@ in lib.makeScope newScope (self: with self; let
     nativeBuildInputs = with pkgs; [ envsubst ];
     buildInputs = [ arcan ];
     installPhase = ''
-      mkdir -p $out/${name}
-      cp -r ${root} $out/${name}
+      mkdir -p $out/${name} $out/bin
+      cp -rT ${root} $out/${name}
       Arcan=${arcan} Appls=$out Appl=${name} envsubst \
         < ${./scripts/arcan_wrapper} \
-        > $out/arcan.${name}
-      chmod +x $out/arcan.${name}
+        > $out/bin/arcan.${name}
+      chmod +x $out/bin/arcan.${name}
     '';
   }) {};
 
