@@ -39,14 +39,14 @@
 
 in lib.makeScope newScope (self: with self; let
 
-  arcanAppl = name: src: root: callPackage ({ pkgs }: derive {
+  arcanAppl = name: src: subdir: callPackage ({ pkgs }: derive {
     name = name;
     src = src;
     nativeBuildInputs = with pkgs; [ envsubst ];
     buildInputs = [ arcan ];
     installPhase = ''
       mkdir -p $out/${name} $out/bin
-      cp -rT ${root} $out/${name}
+      cp -r ./${subdir}/* $out/${name}/
       Arcan=${arcan} Appls=$out Appl=${name} envsubst \
         < ${./scripts/arcan_wrapper} \
         > $out/bin/arcan.${name}
@@ -179,9 +179,9 @@ in {
 
   # arcan appls
 
-  prio = arcanAppl "prio" ./prio "*";
+  awb = arcanAppl "awb" ./awb "";
+  prio = arcanAppl "prio" ./prio "";
   durden = arcanAppl "durden" ./durden "durden";
   safespaces = arcanAppl "safespaces" ./safespaces "safespaces";
-  awb = arcanAppl "awb" ./awb "*";
 
 })
